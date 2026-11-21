@@ -1,14 +1,28 @@
-import { ChevronDown, SlidersHorizontal } from 'lucide-react';
+import {
+  ChevronDown,
+  Cloud,
+  CloudOff,
+  Loader2,
+  SlidersHorizontal,
+} from 'lucide-react';
 import type { BudgetBreakdown, TripConfig } from '../types/trip';
 import { formatMoney } from '../utils/budget';
+
+export type SyncState = 'synced' | 'saving' | 'loading' | 'local' | 'error';
 
 interface TopBarProps {
   config: TripConfig;
   budget: BudgetBreakdown;
+  syncState: SyncState;
   onOpenBudget: (initialTab?: 'budget' | 'checklist') => void;
 }
 
-export function TopBar({ config, budget, onOpenBudget }: TopBarProps) {
+export function TopBar({
+  config,
+  budget,
+  syncState,
+  onOpenBudget,
+}: TopBarProps) {
   const statusDot =
     budget.tierStatus === 'sweet-spot'
       ? 'bg-emerald-500'
@@ -33,10 +47,32 @@ export function TopBar({ config, budget, onOpenBudget }: TopBarProps) {
               Tier 2
             </span>
           </div>
-          <p className="text-[11px] text-[#5C6B6E] truncate mt-0.5">
-            {config.airport} → FL · {config.days}d ·{' '}
-            {config.travelers === 1 ? 'Solo' : `${config.travelers} ppl`}
-          </p>
+          <div className="flex items-center gap-1.5 text-[11px] text-[#5C6B6E] mt-0.5">
+            <span className="truncate">
+              {config.airport} → FL · {config.days}d ·{' '}
+              {config.travelers === 1 ? 'Solo' : `${config.travelers} ppl`}
+            </span>
+            <span
+              className="inline-flex items-center shrink-0"
+              title={
+                syncState === 'synced'
+                  ? 'Saved universally in cloud'
+                  : syncState === 'saving'
+                    ? 'Saving to cloud...'
+                    : syncState === 'local'
+                      ? 'Local preview mode'
+                      : 'Sync issue'
+              }
+            >
+              {syncState === 'saving' || syncState === 'loading' ? (
+                <Loader2 className="w-3 h-3 text-[#0F4C5C] animate-spin" />
+              ) : syncState === 'synced' ? (
+                <Cloud className="w-3 h-3 text-[#2D6A4F]" />
+              ) : (
+                <CloudOff className="w-3 h-3 text-[#B84A32]" />
+              )}
+            </span>
+          </div>
         </div>
       </div>
 

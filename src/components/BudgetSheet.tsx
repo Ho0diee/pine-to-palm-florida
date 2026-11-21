@@ -3,15 +3,19 @@ import {
   Check,
   CheckCircle2,
   Circle,
+  Cloud,
   Copy,
+  Lock,
   Minus,
   Plus,
+  RefreshCw,
   RotateCcw,
   Sparkles,
   Sun,
   Users,
   X,
 } from 'lucide-react';
+import type { SyncState } from './TopBar';
 import {
   AIRBNB_OPTIONS,
   ATTRACTIONS,
@@ -28,9 +32,14 @@ interface BudgetSheetProps {
   initialTab: 'budget' | 'checklist';
   config: TripConfig;
   budget: BudgetBreakdown;
+  syncState: SyncState;
+  lastSyncedAt: string | null;
+  cloudEnabled: boolean;
   onClose: () => void;
   onUpdateConfig: (updater: (prev: TripConfig) => TripConfig) => void;
   onReset: () => void;
+  onRefreshCloud: () => void;
+  onLockApp: () => void;
 }
 
 export function BudgetSheet({
@@ -38,9 +47,14 @@ export function BudgetSheet({
   initialTab,
   config,
   budget,
+  syncState,
+  lastSyncedAt,
+  cloudEnabled,
   onClose,
   onUpdateConfig,
   onReset,
+  onRefreshCloud,
+  onLockApp,
 }: BudgetSheetProps) {
   const [sheetTab, setSheetTab] = useState<'budget' | 'checklist'>(initialTab);
   const [copied, setCopied] = useState(false);
@@ -448,6 +462,50 @@ export function BudgetSheet({
                 >
                   <RotateCcw className="w-3.5 h-3.5" /> Reset
                 </button>
+              </div>
+
+              {/* Cloud Sync & App Lock Card */}
+              <div className="rounded-2xl bg-white border border-[#E6E1D8] p-3.5 flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="text-xs font-bold text-[#1A2426] flex items-center gap-1.5">
+                    <Cloud className="w-3.5 h-3.5 text-[#2D6A4F]" />
+                    {syncState === 'saving'
+                      ? 'Saving to cloud…'
+                      : syncState === 'synced'
+                        ? 'Universal Cloud Sync Active'
+                        : syncState === 'local'
+                          ? 'Local Preview Mode'
+                          : 'Cloud Sync Warning'}
+                  </div>
+                  <p className="text-[11px] text-[#6B7A7D] truncate mt-0.5">
+                    {lastSyncedAt
+                      ? `Last saved ${new Date(lastSyncedAt).toLocaleTimeString([], {
+                          hour: 'numeric',
+                          minute: '2-digit',
+                        })}`
+                      : 'Changes sync across all devices automatically'}
+                  </p>
+                </div>
+
+                {cloudEnabled && (
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={onRefreshCloud}
+                      className="h-9 px-2.5 rounded-xl bg-[#FAF8F5] border border-[#E6E1D8] text-[#0F4C5C] text-xs font-semibold flex items-center gap-1 active:scale-95"
+                      title="Pull latest saved plan from cloud"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={onLockApp}
+                      className="h-9 px-2.5 rounded-xl bg-[#E06D53]/12 text-[#B84A32] text-xs font-semibold flex items-center gap-1 active:scale-95"
+                    >
+                      <Lock className="w-3.5 h-3.5" /> Lock
+                    </button>
+                  </div>
+                )}
               </div>
             </>
           ) : (
